@@ -26,6 +26,7 @@ namespace TestSinglePlayer{
 
 		void Start (){
 			MapGenerator.ReadMap (bitMap[0]);
+			RenderSettings.ambientLight = Color.black;
 		}
 		void Awake (){
 			singleton = this;
