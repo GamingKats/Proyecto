@@ -11,7 +11,7 @@ GameObject:
   - 33: {fileID: 3301500}
   - 23: {fileID: 2331676}
   - 61: {fileID: 6134616}
-  - 114: {fileID: 11425152}
+  - 114: {fileID: 11435882}
   m_Layer: 8
   m_Name: Puerta
   m_TagString: Untagged
@@ -75,10 +75,10 @@ BoxCollider2D:
   m_Material: {fileID: 0}
   m_IsTrigger: 1
   m_UsedByEffector: 0
-  m_Offset: {x: 0, y: 0}
+  m_Offset: {x: 0.01, y: 0.01}
   serializedVersion: 2
-  m_Size: {x: 1, y: 1}
---- !u!114 &11425152
+  m_Size: {x: 0.8, y: 0.8}
+--- !u!114 &11435882
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
@@ -86,7 +86,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 177328}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cdd6fac3c4937504ab2b34dc5df28ebe, type: 3}
+  m_Script: {fileID: 11500000, guid: 82b462cf619c0a74890d4ada9dd92efa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   other: {fileID: 0}

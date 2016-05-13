@@ -5,13 +5,16 @@ public class GestorMultijugador : NetworkBehaviour {
 	//---------------------------------------------------------------------------------------------
 	//---------------------------- VARIABLES NO SINCRONIZADAS -------------------------------------
 	//---------------------------------------------------------------------------------------------
-
+	public GameObject generadorMapasPref;
+	GameObject generadorMapas;
 	//---------------------------------------------------------------------------------------------
 	//----------------------------- VARIABLES SINCRONIZADAS ---------------------------------------
 	//---------------------------------------------------------------------------------------------
 	public SyncListUInt equipo1JugadoresIDs = new SyncListUInt();
 	public SyncListUInt equipo2JugadoresIDs = new SyncListUInt();
 	public SyncListUInt jugadoresListos = new SyncListUInt(); //Han pulsado LISTO en el Lobby
+
+	[SyncVar] bool esEquipo1Triangulos;
 
 	//--------------------------------------------------------------------------------------------
 	//---------------------------- IMPLEMENTACIÓN SINGLETON --------------------------------------
@@ -20,10 +23,12 @@ public class GestorMultijugador : NetworkBehaviour {
 
 	public static GestorMultijugador singleton{
 		get{
+			//Debug.LogError (_singleton);
 			if (_singleton == null) {
 				_singleton = Object.FindObjectOfType (typeof(GestorMultijugador)) as GestorMultijugador;
 
 				if (_singleton == null) {
+					Debug.LogError ("Capushoo");
 					GameObject go = new GameObject ("GestorMultijugador");
 					DontDestroyOnLoad (go);
 					_singleton = go.AddComponent<GestorMultijugador> ();
@@ -54,8 +59,9 @@ public class GestorMultijugador : NetworkBehaviour {
 	}
 
 	public bool TodosListos ( ){
-		return jugadoresListos.Count == (equipo1JugadoresIDs.Count + equipo2JugadoresIDs.Count) &&
-			equipo1JugadoresIDs.Count == equipo2JugadoresIDs.Count;
+		return jugadoresListos.Count == (equipo1JugadoresIDs.Count + equipo2JugadoresIDs.Count) 
+			//&&	equipo1JugadoresIDs.Count == equipo2JugadoresIDs.Count
+			;
 	}
 
 	public void AñadirJugador ( uint jugadorID, bool equipo1 ){
@@ -96,8 +102,36 @@ public class GestorMultijugador : NetworkBehaviour {
 			jugadoresListos.Add (jugadorId);
 		}
 		if (TodosListos ()) {
-			GestorRed.singleton.ServerChangeScene ("InGameScene");
+			generadorMapas = (GameObject)Instantiate(generadorMapasPref);
+			generadorMapas.GetComponent<GeneradorMapas> ().ReiniciarValores ();
+			NetworkServer.Spawn (generadorMapas);
+			GestorRed.singleton.ServerChangeScene ("InGameScene");	
+			//Rpc_ComenzarPartida (); //Está bug en Unity y no se ejecuta en los clientes
+			//En su lugar se ejecuta en OnLevelWasLoaded(), en el script Jugador
 		}
 	}
 
+	public bool EsEquipo1Triangulos (){
+		return esEquipo1Triangulos;
+	}
+
+	[ClientRpc]
+	public void Rpc_ComenzarPartida (){
+		//VERSION ANTIGUA
+		//GestorRed.singleton.ServerChangeScene ("InGameScene");
+		//------------------------------------------------------
+		//generadorMapas = GameObject.FindGameObjectWithTag("GeneradorMapas");
+
+		ComenzarPartida ();
+	}
+
+	void ComenzarPartida (){
+		GameObject[] jugadores = GameObject.FindGameObjectsWithTag("Player");
+		Debug.Log ("JUgadores vacio??");
+		foreach (GameObject go in jugadores) {
+			Jugador jugador = go.GetComponent<Jugador> ();
+			Debug.Log ("ComIeNzA A jugAr");
+			jugador.ComienzaAJugar ();
+		}
+	}
 }

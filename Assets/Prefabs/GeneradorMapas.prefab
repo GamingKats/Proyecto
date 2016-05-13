@@ -9,9 +9,11 @@ GameObject:
   m_Component:
   - 4: {fileID: 455208}
   - 114: {fileID: 11408534}
+  - 114: {fileID: 11432314}
+  - 114: {fileID: 11421680}
   m_Layer: 0
   m_Name: GeneradorMapas
-  m_TagString: Untagged
+  m_TagString: GeneradorMapas
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -34,7 +36,7 @@ MonoBehaviour:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 113668}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b0fe75aad8981534b9133788aacd8ccc, type: 3}
   m_Name: 
@@ -46,13 +48,84 @@ MonoBehaviour:
   gatePref: {fileID: 177328, guid: b062df92e806a784687ab8bff47a487f, type: 2}
   teleportPref: {fileID: 103480, guid: ac74c86d7f616584ba131f4192befec3, type: 2}
   singleWallPref: {fileID: 126290, guid: 5234a2d6fa46347419d9df558787c600, type: 2}
+  posicionIniEsfPref: {fileID: 112072, guid: bad88909efc782a4cb35000054200f86, type: 2}
+  posicionIniTriPref: {fileID: 153488, guid: 3476f6bc99355094b924d93c3dea16e9, type: 2}
+--- !u!114 &11421680
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 113668}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 372142912, guid: 870353891bb340e2b2a9c8707e7419ba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_SceneId:
+    m_Value: 0
+  m_AssetId:
+    i0: 75
+    i1: 0
+    i2: 154
+    i3: 186
+    i4: 196
+    i5: 52
+    i6: 89
+    i7: 84
+    i8: 40
+    i9: 91
+    i10: 31
+    i11: 27
+    i12: 242
+    i13: 185
+    i14: 238
+    i15: 243
+  m_ServerOnly: 0
+  m_LocalPlayerAuthority: 0
+--- !u!114 &11432314
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 113668}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d713cb1326704f4f892e04345f6be81, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mapa: 0
+  texturas:
+  - {fileID: 2800000, guid: f849ac45e666ed34eb3f6264f811fc96, type: 3}
+  - {fileID: 2800000, guid: 54bbfe9f89585e74f90bb1c17d4bd4c8, type: 3}
+  - {fileID: 2800000, guid: 4883b243ca31e6d48833bea15efcbf08, type: 3}
+  - {fileID: 2800000, guid: fb2f54271ecf09f43898a27477e0c1a8, type: 3}
+  - {fileID: 2800000, guid: 5bade82efdd8d9e45973ad1a5ffd3f4a, type: 3}
+  paredDinamicaPref: {fileID: 150096, guid: f1e5c50d4287a3945ace405a57514319, type: 2}
+  metaPref: {fileID: 176316, guid: 97f0d7e5843c25b43bd6579a0a11b18c, type: 2}
+  puertaPref: {fileID: 177328, guid: b062df92e806a784687ab8bff47a487f, type: 2}
+  teleportPref: {fileID: 103480, guid: ac74c86d7f616584ba131f4192befec3, type: 2}
+  paredPref: {fileID: 126290, guid: 5234a2d6fa46347419d9df558787c600, type: 2}
+  posicionIniEsfPref: {fileID: 112072, guid: bad88909efc782a4cb35000054200f86, type: 2}
+  posicionIniTriPref: {fileID: 153488, guid: 3476f6bc99355094b924d93c3dea16e9, type: 2}
 --- !u!1001 &100100000
 Prefab:
   m_ObjectHideFlags: 1
   serializedVersion: 2
   m_Modification:
     m_TransformParent: {fileID: 0}
-    m_Modifications: []
+    m_Modifications:
+    - target: {fileID: 0}
+      propertyPath: m_TagString
+      value: GeneradorMapas
+      objectReference: {fileID: 0}
+    - target: {fileID: 0}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 0}
+      propertyPath: m_LocalPlayerAuthority
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 0}
   m_RootGameObject: {fileID: 113668}

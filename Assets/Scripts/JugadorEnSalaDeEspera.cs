@@ -1,7 +1,10 @@
 ﻿using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.SceneManagement;
 
 public class JugadorEnSalaDeEspera : NetworkBehaviour {
+
+	[SyncVar]public bool enabled = true;
 
 	bool editandoNombre = false;
 	string nombreAux = "Elije Nombre";
@@ -13,8 +16,11 @@ public class JugadorEnSalaDeEspera : NetworkBehaviour {
 	}
 
 	public override void OnStartClient(){
-		if ( isServer )
-			GestorMultijugador.singleton.AñadirJugador (netId.Value, 0==Random.Range(0,2));
+		Debug.Log ("ClienteOnStart");
+		if ( isServer ){
+			if (SceneManager.GetActiveScene().name == "LobbyScene")
+				GestorMultijugador.singleton.AñadirJugador (netId.Value, 0==Random.Range(0,2));
+		}
 		if (isLocalPlayer) {
 			if (PlayerPrefs.HasKey ("ApodoJugador")) {
 				nombreAux = PlayerPrefs.GetString ("ApodoJugador");
@@ -26,8 +32,8 @@ public class JugadorEnSalaDeEspera : NetworkBehaviour {
 	void OnGUI (){
 		if (!isLocalPlayer)
 			return;
-		
-		MostrarJugadores ();
+		if ( enabled )
+			MostrarJugadores ();
 	}
 
 	void MostrarJugadores (){
@@ -130,6 +136,7 @@ public class JugadorEnSalaDeEspera : NetworkBehaviour {
 
 		if (!GestorMultijugador.singleton.jugadoresListos.Contains(netId.Value)) {
 			if (GUI.Button (new Rect ((Screen.width - width) / 2, Screen.height - height - spacing, width, height), "I'm Ready")) {
+				//DontDestroyOnLoad (gameObject);
 				Cmd_JugadorListo (netId.Value);
 			}
 		}
@@ -141,6 +148,8 @@ public class JugadorEnSalaDeEspera : NetworkBehaviour {
 	}
 	[Command]
 	void Cmd_JugadorListo ( uint jugadorId){
+		//DontDestroyOnLoad (gameObject);
+		enabled = false;
 		GestorMultijugador.singleton.JugadorListo (jugadorId);
 	}
 }

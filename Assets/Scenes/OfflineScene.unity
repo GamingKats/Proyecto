@@ -524,7 +524,6 @@ GameObject:
   m_Component:
   - 4: {fileID: 626510820}
   - 114: {fileID: 626510819}
-  - 114: {fileID: 626510821}
   m_Layer: 0
   m_Name: NetworkManager
   m_TagString: Untagged
@@ -551,13 +550,15 @@ MonoBehaviour:
   m_RunInBackground: 1
   m_ScriptCRCCheck: 1
   m_MaxDelay: 0.01
-  m_LogLevel: 2
+  m_LogLevel: 0
   m_PlayerPrefab: {fileID: 130262, guid: 1c03f3f35dbd5e34b92e80b02d7c8cf8, type: 2}
   m_AutoCreatePlayer: 1
   m_PlayerSpawnMethod: 0
   m_OfflineScene: OfflineScene
   m_OnlineScene: LobbyScene
-  m_SpawnPrefabs: []
+  m_SpawnPrefabs:
+  - {fileID: 113668, guid: 4b009abac4345954285b1f1bf2b9eef3, type: 2}
+  - {fileID: 136004, guid: 2872be2aea963df4b896597984323760, type: 2}
   m_CustomConfig: 0
   m_MaxConnections: 4
   m_ConnectionConfig:
@@ -597,7 +598,6 @@ MonoBehaviour:
   matchMaker: {fileID: 0}
   matchName: default
   matchSize: 4
-  GeneradorMapasPref: {fileID: 113668, guid: 4b009abac4345954285b1f1bf2b9eef3, type: 2}
 --- !u!4 &626510820
 Transform:
   m_ObjectHideFlags: 0
@@ -610,21 +610,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 2
---- !u!114 &626510821
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 626510818}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 227461547, guid: 870353891bb340e2b2a9c8707e7419ba, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  manager: {fileID: 0}
-  showGUI: 1
-  offsetX: 0
-  offsetY: 0
 --- !u!1 &699150074
 GameObject:
   m_ObjectHideFlags: 0

@@ -8,7 +8,7 @@ GameObject:
   serializedVersion: 4
   m_Component:
   - 4: {fileID: 424918}
-  - 114: {fileID: 11485076}
+  - 114: {fileID: 11472552}
   m_Layer: 0
   m_Name: ParedDinamica
   m_TagString: Untagged
@@ -28,7 +28,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
---- !u!114 &11485076
+--- !u!114 &11472552
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
@@ -36,7 +36,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 150096}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 63ab6afe855e00c43a9a3a18bb53b381, type: 3}
+  m_Script: {fileID: 11500000, guid: f2e98dd68b1728443ac698ba456e877b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1001 &100100000

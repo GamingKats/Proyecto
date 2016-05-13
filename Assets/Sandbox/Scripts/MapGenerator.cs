@@ -14,11 +14,12 @@ namespace TestSinglePlayer{
 
 		public Texture2D[] bitMap;
 		public GameObject dynamicWallPref;
-		//public GameObject singleDynamicWallPref;
 		public GameObject endAreaPref;
 		public GameObject gatePref;
 		public GameObject teleportPref;
 		public GameObject singleWallPref;
+		public GameObject posicionIniEsfPref;
+		public GameObject posicionIniTriPref;
 
 		List<GameObject> dynamicWallsList;
 		List<GameObject> gatesList;
@@ -46,24 +47,31 @@ namespace TestSinglePlayer{
 			//System.Array.Reverse(pix);
 
 			MapGenerator.singleton.mapSize = map.width;
+			Debug.Log (map.width + ", " + map.height);
 			MapGenerator.singleton.currentMap = new string[map.width, map.height];
 			Color32 c;
 
-			GameObject mapObj = new GameObject ();
-			GameObject blockedObj = new GameObject ();
-			GameObject dynamicsObj = new GameObject ();
-			GameObject teleportsObj = new GameObject ();
-			GameObject gatesObj = new GameObject ();
+			GameObject mapObj = new GameObject ("Map");
+			GameObject blockedObj = new GameObject ("Blocked");
+			GameObject dynamicsObj = new GameObject ("Dynamics");
+			GameObject teleportsObj = new GameObject ("Teleports");
+			GameObject gatesObj = new GameObject ("Gates");
+			GameObject spawnsObj = new GameObject ("Spawns");
+			GameObject spawnsTri = new GameObject ("SpawnTris");
+			GameObject spawnsSph = new GameObject ("SpawnSph");
 			
-			mapObj.name = "Map";
+			/*mapObj.name = "Map";
 			blockedObj.name = "Blocked";
 			dynamicsObj.name = "Dynamics";
 			teleportsObj.name = "Teleports";
-			gatesObj.name = "Gates";
+			gatesObj.name = "Gates";*/
 			blockedObj.transform.parent = mapObj.transform;
 			dynamicsObj.transform.parent = mapObj.transform;
 			teleportsObj.transform.parent = mapObj.transform;
 			gatesObj.transform.parent = mapObj.transform;
+			spawnsObj.transform.parent = mapObj.transform;
+			spawnsSph.transform.parent = spawnsObj.transform;
+			spawnsTri.transform.parent = spawnsObj.transform;
 
 			int offset = (MapGenerator.singleton.mapSize -1) / 2;
 			int x, y;
@@ -124,7 +132,7 @@ namespace TestSinglePlayer{
 					 ************************************************************/
 					if ( c == Color.blue ){
 						MapGenerator.singleton.currentMap[i,j] = "st";
-						//TODO
+						MapGenerator.PlaceSpawn (spawnsTri.transform, true, x, y);
 						continue;
 					}
 					/*************************************************************
@@ -132,7 +140,7 @@ namespace TestSinglePlayer{
 					 ************************************************************/
 					if ( c == Color.green ){
 						MapGenerator.singleton.currentMap[i,j] = "ss";
-						//TODO
+						MapGenerator.PlaceSpawn (spawnsSph.transform, false, x, y);
 						continue;
 					}
 				}
@@ -141,10 +149,9 @@ namespace TestSinglePlayer{
 
 		private static void PlaceEndArea ( Transform parent, int x, int y ){
 			GameObject go = Instantiate (MapGenerator.singleton.endAreaPref);
-			go.transform.position = new Vector3 ( x, y , 1);
+			go.transform.position = new Vector3 ( x, y , 0);
 			go.transform.parent = parent;
-			go.name = "EndArea";
-			go.tag = "EndArea";
+			go.name = "Meta";
 		}
 
 		private static void PlaceWall ( Transform parent, int x, int y ){
@@ -155,6 +162,20 @@ namespace TestSinglePlayer{
 			go.name = "wall";
 		}
 
+		private static void PlaceSpawn ( Transform parent, bool triangle, int x, int y){
+			GameObject go;
+			if (triangle) {
+				go = Instantiate (MapGenerator.singleton.posicionIniTriPref);
+				go.name = "PosicionInicialTriangulo";
+
+			} else {
+				go = Instantiate (MapGenerator.singleton.posicionIniEsfPref);
+				go.name = "PosicionInicialEsfera";
+			}
+			go.transform.position = new Vector3 ( x, y , 0);
+			go.transform.parent = parent;
+
+		}
 		private static void PlaceDynamicWalls ( Transform dynamics, int key, int x, int y){
 			GameObject pair = null;
 			foreach (GameObject d in MapGenerator.singleton.dynamicWallsList) {

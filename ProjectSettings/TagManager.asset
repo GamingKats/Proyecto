@@ -4,9 +4,12 @@
 TagManager:
   serializedVersion: 2
   tags:
-  - Team1
-  - Team2
-  - EndArea
+  - Equipo1
+  - Equipo2
+  - Meta
+  - PosicionInicialTriangulos
+  - PosicionInicialEsferas
+  - GeneradorMapas
   layers:
   - Default
   - TransparentFX

@@ -2,18 +2,19 @@
 using UnityEngine.Networking;
 using UnityEngine.Networking.Match;
 using System.Collections;
+using UnityEngine.SceneManagement;
 
 public class GestorRed : NetworkManager {
 
+	GameObject gestorMultijugador;
+	//public GameObject GeneradorMapasPref;
+	//static short jugadores = 0;
 
-	public GameObject GeneradorMapasPref;
-	static short jugadores = 0;
-
-	public class UserMessage : MessageBase
+	/*public class UserMessage : MessageBase
 	{
 		public string name;
 		//public string team;
-	}
+	}*/
 
 	public void TrasUnirseAPartida (JoinMatchResponse matchInfo){
 		if (matchInfo.success){
@@ -22,24 +23,46 @@ public class GestorRed : NetworkManager {
 		base.OnMatchJoined(matchInfo);
 	}
 
+	public override void OnServerSceneChanged (string sceneName)
+	{
+		if (sceneName == "InGameScene") {
+			//GameObject generadorMapa = GameObject.FindGameObjectWithTag ("GeneradorMapas");
+			//generadorMapa.GetComponent<GeneradorMapas> ().ReiniciarValores ();
+			//generadorMapa.GetComponent<GeneradorMapas> ().CrearMapa ();
+
+		}
+		base.OnServerSceneChanged (sceneName);
+	}
 
 	public override void OnMatchCreate(CreateMatchResponse matchInfo)
 	{
 		if (matchInfo.success) {
-			base.OnMatchCreate(matchInfo);
 			//GameObject party = (GameObject)Instantiate (spawnPrefabs[0], Vector3.zero, Quaternion.identity);
 			//NetworkServer.Spawn(party);
-			GameObject generador = Instantiate(GeneradorMapasPref);
+			//GameObject generador = Instantiate(GeneradorMapasPref);
+			gestorMultijugador = (GameObject)Instantiate(spawnPrefabs[1], Vector3.zero, Quaternion.identity);
+			DontDestroyOnLoad (gestorMultijugador);
+			StartHost (new MatchInfo (matchInfo));
+			Debug.LogWarning ("Spawneo el gestor");
+			NetworkServer.Spawn (gestorMultijugador);
+			//base.OnMatchCreate(matchInfo);
 		}
 	}
 
-	/*
 	public override void OnClientSceneChanged(NetworkConnection conn){
-		if (conn.isReady)
-			return;
+
+		Debug.Log ("Scene: " + SceneManager.GetActiveScene ().name);
+		if (SceneManager.GetActiveScene ().name == "InGameScene") {
+			//if (!conn.isReady)
+			//	ClientScene.Ready (conn);
+			GameObject generadorMapa = GameObject.FindGameObjectWithTag ("GeneradorMapas");
+			generadorMapa.GetComponent<GeneradorMapas> ().CrearMapa ();	
+		}
+			
 		//Add Player
-		base.OnClientSceneChanged (conn);
+			base.OnClientSceneChanged (conn);
 	}
+	/*
 	//Called ON CLIENT
 	public override void OnClientConnect(NetworkConnection conn)
 	{
