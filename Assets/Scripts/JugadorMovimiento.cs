@@ -9,13 +9,16 @@ public class JugadorMovimiento : NetworkBehaviour {
 	[SerializeField] float velocidadBase = 2;
 	[SerializeField] float velocidadEsferas = 1.5f;
 	[SerializeField] float velocidadTriangulos = 1.0f;
-	Rigidbody2D rb;
+	[SerializeField] Rigidbody2D rb;
 
 	float angle;
 	GameObject character;
+	JugadorEnSalaDeEspera jesde;
 
 	void Start (){
 		rb = GetComponent ("Rigidbody2D") as Rigidbody2D;
+		jesde = GetComponent<JugadorEnSalaDeEspera> ();
+		EstablecerBando (true);
 	}
 
 	public void EstablecerBando ( bool esfera ){
@@ -51,7 +54,10 @@ public class JugadorMovimiento : NetworkBehaviour {
 			rb.angularVelocity = 0;
 			rb.velocity = Vector2.zero;
 		}
-		Camera.main.transform.position = new Vector3(transform.position.x, transform.position.y,-10);
+		if ( jesde.enabled )
+			Camera.main.transform.position = new Vector3(transform.position.x, transform.position.y-4,-10);
+		else
+			Camera.main.transform.position = new Vector3(transform.position.x, transform.position.y,-10);
 		//Triangles angle
 		//if (GameManager.GetTeam (netId.Value) == GameManager.GetTrianglesTeam ())
 		transform.rotation = Quaternion.Euler (0, 0, angle);

@@ -49,6 +49,9 @@ public class GestorMultijugador : NetworkBehaviour {
 		if (GestorMultijugador._singleton == null) {
 			GestorMultijugador._singleton = GestorMultijugador.singleton;
 			//Debug.LogError ("[ERROR]: Awake del singleton");
+		}else {
+			Destroy (GameObject.Find("GestorMultijugador"));
+			_singleton = this;
 		}
 	}
 	//--------------------------------------------------------------------------------------------------

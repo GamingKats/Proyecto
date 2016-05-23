@@ -6,138 +6,81 @@ public class JugadorEnSalaDeEspera : NetworkBehaviour {
 
 	[SyncVar]public bool enabled = true;
 
-	bool editandoNombre = false;
-	string nombreAux = "Elije Nombre";
-	int width, height, spacing, posX, posY;
 	Jugador esteJugador;
+	bool equipo1;
 
+	GameObject modelo, luz;
 	void Start (){
 		esteJugador = GetComponent<Jugador> ();
+		EstablecerEquipoInicial ();
 	}
 
 	public override void OnStartClient(){
-		Debug.Log ("ClienteOnStart");
+		Debug.LogError ("ClienteOnStart");
 		if ( isServer ){
 			if (SceneManager.GetActiveScene().name == "LobbyScene")
 				GestorMultijugador.singleton.AñadirJugador (netId.Value, 0==Random.Range(0,2));
 		}
+	}
+
+	void EstablecerEquipoInicial (){
+		GameObject[] spawn; // = GameObject.FindGameObjectsWithTag ("PosicionInicialEsferas");
+		if (GestorMultijugador.singleton.JugadorEnEquipo1 (netId.Value)) {
+			spawn = GameObject.FindGameObjectsWithTag ("PosicionInicialEsferas");
+			modelo = transform.GetChild (1).gameObject;
+			equipo1 = true;
+		} else {
+			spawn = GameObject.FindGameObjectsWithTag ("PosicionInicialTriangulos");
+			modelo = transform.GetChild (0).gameObject;
+			equipo1 = false;
+		}
+
+		transform.GetChild(1).GetChild (3).gameObject.SetActive (false);
+		modelo.SetActive (true);
+		luz = modelo.transform.GetChild (0).gameObject;
+		if (!isLocalPlayer) {
+			luz.SetActive (false);
+		}
+		int indice = Random.Range (0, spawn.Length);
+		transform.position = spawn [indice].transform.position;
+		Destroy (spawn [indice]);
+	}
+
+	void EstablecerEquipo ( ){
+		modelo.SetActive (false);
+		if (equipo1) {
+			modelo = transform.GetChild (1).gameObject;
+		} else {
+			modelo = transform.GetChild (0).gameObject;
+		}
+		modelo.SetActive (true);
+		luz.SetActive (false);
+		luz = modelo.transform.GetChild (0).gameObject;
 		if (isLocalPlayer) {
-			if (PlayerPrefs.HasKey ("ApodoJugador")) {
-				nombreAux = PlayerPrefs.GetString ("ApodoJugador");
-			}
-			esteJugador.Cmd_RenombrarJugador ( nombreAux );
+			luz.SetActive (true);
 		}
 	}
-
-	void OnGUI (){
-		if (!isLocalPlayer)
-			return;
-		if ( enabled )
-			MostrarJugadores ();
+		
+	void OnTriggerEnter2D ( Collider2D col ){
+		if (col.tag == "Meta" && isLocalPlayer) {
+			Destroy (this);
+			Cmd_JugadorListo (netId.Value);
+		}
 	}
-
-	void MostrarJugadores (){
-		posX = Screen.width / 20;
-		posY = Screen.height / 13;
-		width = (Screen.width - 3 * posX) / 2;
-		height = posY;
-		spacing = posX;
-
-		GUI.Button (new Rect ((Screen.width - width) / 2, 0, width, spacing), NetworkManager.singleton.matchName);
-
-		//GUI.Button (new Rect (posX, posY, width, height), "TEAM1");
-		GameObject[] players = GameObject.FindGameObjectsWithTag ("Player");
-		foreach ( GameObject user in players ){
-			Jugador jugador = user.GetComponent<Jugador>();
-			if ( !GestorMultijugador.singleton.JugadorEnEquipo1( jugador.netId.Value ) )
-				continue;
-			posY += height;
-			if (jugador.netId.Value == netId.Value) {
-				GUI.skin.button.normal.textColor = Color.red;
-				if (editandoNombre) {
-					nombreAux = GUI.TextField (new Rect (posX, posY, width-2*spacing, height), nombreAux);
-					if (GUI.Button (new Rect (posX + width - 2*spacing, posY, spacing, height), "V")) {
-						esteJugador.Cmd_RenombrarJugador( nombreAux );
-						gameObject.name = nombreAux;
-						editandoNombre = false;
-						PlayerPrefs.SetString ("ApodoJugador", nombreAux);
-					}
-					if (GUI.Button (new Rect (posX + width-1*spacing, posY, spacing, height), "X")) {
-						nombreAux = esteJugador.nombreUsuario;
-						editandoNombre = false;
-					}
-				} else {
-					if (GUI.Button (new Rect (posX, posY, width - spacing, height), jugador.nombreUsuario)) {
-						nombreAux = esteJugador.nombreUsuario;
-						editandoNombre = true;
-					}
-					string pReady = GestorMultijugador.singleton.jugadoresListos.Contains(jugador.netId.Value) ? "V":"X";
-					GUI.Button ( new Rect ( posX+width-spacing, posY, spacing, height), pReady);
+	void Update (){
+		if (isLocalPlayer) {
+			if (transform.position.x >= 0) {
+				if (equipo1) {
+					equipo1 = false;
+					Cmd_EstablecerEquipo (netId.Value, equipo1);
+					EstablecerEquipo ();
 				}
 			} else {
-				GUI.skin.button.normal.textColor = Color.white;
-				GUI.Button (new Rect (posX, posY, width - spacing, height), jugador.nombreUsuario);
-				string pReady = GestorMultijugador.singleton.jugadoresListos.Contains(jugador.netId.Value) ? "V":"X";
-				GUI.Button ( new Rect ( posX+width-spacing, posY, spacing, height), pReady);
-			}
-		}
-		GUI.skin.button.normal.textColor = Color.white;
-		posY += height;
-		if ( !GestorMultijugador.singleton.JugadorEnEquipo1( netId.Value ) && !GestorMultijugador.singleton.jugadoresListos.Contains(netId.Value)) {
-			if ( GUI.Button ( new Rect ( posX,posY,width, height), "Join team1") ){
-				Cmd_EstablecerEquipo(netId.Value, true);
-			}
-		}
-
-		posX += width + spacing;
-		posY = Screen.height / 13;
-		//GUI.Button (new Rect (posX, posY, width, height), "TEAM2");
-		foreach ( GameObject user in players ){
-			Jugador jugador = user.GetComponent<Jugador>();
-			if ( GestorMultijugador.singleton.JugadorEnEquipo1( jugador.netId.Value ) )
-				continue;
-			posY += height;
-			if (jugador.netId.Value == netId.Value) {
-				GUI.skin.button.normal.textColor = Color.red;
-				if (editandoNombre) {
-					nombreAux = GUI.TextField (new Rect (posX, posY, width-2*spacing, height), nombreAux);
-					if (GUI.Button (new Rect (posX + width - 2*spacing, posY, spacing, height), "V")) {
-						esteJugador.Cmd_RenombrarJugador( nombreAux );
-						gameObject.name = nombreAux;
-						editandoNombre = false;
-						PlayerPrefs.SetString ("ApodoJugador", nombreAux);
-					}
-					if (GUI.Button (new Rect (posX + width-1*spacing, posY, spacing, height), "X")) {
-						nombreAux = esteJugador.nombreUsuario;
-						editandoNombre = false;
-					}
-				} else {
-					if (GUI.Button (new Rect (posX, posY, width - spacing, height), jugador.nombreUsuario)) {
-						nombreAux = esteJugador.nombreUsuario;
-						editandoNombre = true;
-					}
-					string pReady = GestorMultijugador.singleton.jugadoresListos.Contains(jugador.netId.Value) ? "V":"X";
-					GUI.Button ( new Rect ( posX+width-spacing, posY, spacing, height), pReady);
+				if (!equipo1) {
+					equipo1 = true;
+					Cmd_EstablecerEquipo (netId.Value, equipo1);
+					EstablecerEquipo ();
 				}
-			} else {
-				GUI.skin.button.normal.textColor = Color.white;
-				GUI.Button (new Rect (posX, posY, width - spacing, height), jugador.nombreUsuario);
-				string pReady = GestorMultijugador.singleton.jugadoresListos.Contains(jugador.netId.Value) ? "V":"X";
-				GUI.Button ( new Rect ( posX+width-spacing, posY, spacing, height), pReady);
-			}
-		}
-		GUI.skin.button.normal.textColor = Color.white;
-		posY += height;
-		if (GestorMultijugador.singleton.JugadorEnEquipo1( netId.Value ) && !GestorMultijugador.singleton.jugadoresListos.Contains(netId.Value)) {
-			if ( GUI.Button ( new Rect ( posX,posY,width, height), "Join team2") ){
-				Cmd_EstablecerEquipo(netId.Value, false);
-			}
-		}
-
-		if (!GestorMultijugador.singleton.jugadoresListos.Contains(netId.Value)) {
-			if (GUI.Button (new Rect ((Screen.width - width) / 2, Screen.height - height - spacing, width, height), "I'm Ready")) {
-				//DontDestroyOnLoad (gameObject);
-				Cmd_JugadorListo (netId.Value);
 			}
 		}
 	}
