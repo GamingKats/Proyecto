@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.SceneManagement;
 
 public class GestorMultijugador : NetworkBehaviour {
 	//---------------------------------------------------------------------------------------------
@@ -7,12 +8,26 @@ public class GestorMultijugador : NetworkBehaviour {
 	//---------------------------------------------------------------------------------------------
 	public GameObject generadorMapasPref;
 	GameObject generadorMapas;
+	public bool jugando =false;
+	public bool rondaFinalizada =false;
+
 	//---------------------------------------------------------------------------------------------
 	//----------------------------- VARIABLES SINCRONIZADAS ---------------------------------------
 	//---------------------------------------------------------------------------------------------
 	public SyncListUInt equipo1JugadoresIDs = new SyncListUInt();
 	public SyncListUInt equipo2JugadoresIDs = new SyncListUInt();
 	public SyncListUInt jugadoresListos = new SyncListUInt(); //Han pulsado LISTO en el Lobby
+
+	//---------------------------------------------------------------------------------------------
+	//----------------------------- VARIABLES SINCRONIZADAS CONTROL GAME --------------------------
+	//---------------------------------------------------------------------------------------------
+	[SyncVar]public int numRondas = 0;
+	[SyncVar]public int rondaActual = 0;
+	[SyncVar]public int tiempoRonda = 0;
+
+	[SyncVar]public float tiempoRondaActual=0;
+	[SyncVar]public float tiempoActual =0;
+	[SyncVar]public float countBackActual = 5;
 
 	[SyncVar] bool esEquipo1Triangulos;
 
@@ -49,6 +64,31 @@ public class GestorMultijugador : NetworkBehaviour {
 		if (GestorMultijugador._singleton == null) {
 			GestorMultijugador._singleton = GestorMultijugador.singleton;
 			//Debug.LogError ("[ERROR]: Awake del singleton");
+		}else{
+			GestorMultijugador._singleton = this;
+			Destroy (GameObject.Find ("GestorMultijugador"));
+		}
+	}
+
+	// Update is called once per frame
+	void Update () {
+		if (isServer) {
+			Debug.Log ("Soy el server");
+			Debug.Log ("Jugando: "+jugando);
+			if (SceneManager.GetActiveScene ().name == "InGameScene") {
+				Debug.Log ("Estoy en la escena de juego");
+				if (jugando) {
+					if (rondaFinalizada) {
+						Debug.Log("Finalizo ronda");
+						ContinuarPartida ();
+					} else {
+						cuentaAtras ();
+					}
+				} else {
+					cuentaAtrasInicial ();
+				}
+
+			}
 		}
 	}
 	//--------------------------------------------------------------------------------------------------
@@ -102,10 +142,19 @@ public class GestorMultijugador : NetworkBehaviour {
 			jugadoresListos.Add (jugadorId);
 		}
 		if (TodosListos ()) {
+			Debug.Log ("Estoy apunto de empezar");
+			//Variables iniciales hardcodeadas
+			numRondas = 4;
+			rondaActual = 1;
+			tiempoRonda = 30; // En segundos
+			tiempoRondaActual = tiempoRonda;
+			tiempoActual = 30.0f;
+
+			Debug.Log ("Set variables iniciales");
 			generadorMapas = (GameObject)Instantiate(generadorMapasPref);
 			generadorMapas.GetComponent<GeneradorMapas> ().ReiniciarValores ();
 			NetworkServer.Spawn (generadorMapas);
-			GestorRed.singleton.ServerChangeScene ("InGameScene");	
+			GestorRed.singleton.ServerChangeScene ("InGameScene");
 			//Rpc_ComenzarPartida (); //Está bug en Unity y no se ejecuta en los clientes
 			//En su lugar se ejecuta en OnLevelWasLoaded(), en el script Jugador
 		}
@@ -115,13 +164,12 @@ public class GestorMultijugador : NetworkBehaviour {
 		return esEquipo1Triangulos;
 	}
 
-	[ClientRpc]
+	/*[ClientRpc]
 	public void Rpc_ComenzarPartida (){
 		//VERSION ANTIGUA
 		//GestorRed.singleton.ServerChangeScene ("InGameScene");
 		//------------------------------------------------------
 		//generadorMapas = GameObject.FindGameObjectWithTag("GeneradorMapas");
-
 		ComenzarPartida ();
 	}
 
@@ -133,5 +181,56 @@ public class GestorMultijugador : NetworkBehaviour {
 			Debug.Log ("ComIeNzA A jugAr");
 			jugador.ComienzaAJugar ();
 		}
+	}*/
+
+	void ContinuarPartida(){
+		if (UltimaRonda()) {
+			//ToDo
+			Debug.Log ("Me tengo que ir a la pantalla de resultados");
+			GestorRed.singleton.ServerChangeScene ("OfflineScene");
+		} else {
+			GameObject[] jugadores = GameObject.FindGameObjectsWithTag ("Player");
+			Debug.Log ("JUgadores vacio??");
+			Debug.Log ("Sumo y seteo Inicial");
+			if (isServer) {
+				rondaActual += 1;
+				tiempoActual = 30;
+				countBackActual = 5;
+				jugando = false;
+				rondaFinalizada = false;
+			}
+			foreach (GameObject go in jugadores) {
+				Jugador jugador = go.GetComponent<Jugador> ();
+				Debug.Log ("Continua jugando");
+				GestorRed.singleton.ServerChangeScene ("InGameScene");
+			}
+		}
+
+	}
+
+	public bool UltimaRonda(){
+		return (rondaActual>=numRondas);
+	}
+
+	//Cuenta atras para empezar el nivel
+	public void cuentaAtrasInicial(){	
+		Debug.Log ("Empiezo a contar");	
+		if (countBackActual <= 0.0) {
+			jugando = true;
+		} else {		
+			countBackActual -= Time.deltaTime;
+		}	
+	}
+
+	//Cuenta atras del nivel
+	public void cuentaAtras(){	
+		Debug.Log ("Continuo contando");
+		if (tiempoActual <= 0.0) {
+			jugando = false;
+			rondaFinalizada = true;
+		} else {		
+			tiempoActual -= Time.deltaTime;
+		}
+		Debug.Log ("Tiempo ronda: " + tiempoActual);
 	}
 }
