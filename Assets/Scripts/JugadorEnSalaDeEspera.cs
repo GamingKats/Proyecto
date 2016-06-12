@@ -145,6 +145,7 @@ public class JugadorEnSalaDeEspera : NetworkBehaviour {
 	[Command]
 	void Cmd_EstablecerEquipo ( uint jugadorId, bool equipo1 ){
 		GestorMultijugador.singleton.EstablecerEquipo (jugadorId, equipo1);
+
 	}
 	[Command]
 	void Cmd_JugadorListo ( uint jugadorId){

@@ -6,10 +6,20 @@ public class Jugador : NetworkBehaviour {
 
 	[SyncVar]
 	public string nombreUsuario;
-
-	bool esTriangulo;
-
-	bool estaEnEquipo1;
+	[SyncVar]
+	public bool esTriangulo;
+	[SyncVar]
+	public bool estaEnEquipo1;
+	[SyncVar]
+	public bool moverse;
+	[SyncVar]
+	public int puntosEscapada = 0;
+	[SyncVar]
+	public int puntosPillada = 0;
+	[SyncVar]
+	public int puntosBomba = 0;
+	[SyncVar]
+	public int puntosVelocidad = 0;
 
 
 	void Awake (){
@@ -22,12 +32,34 @@ public class Jugador : NetworkBehaviour {
 		}
 	}
 
+	//Para saber si colisiona con otro jugador
+	void OnCollisionEnter2D(Collision2D collision) {
+		if (SceneManager.GetActiveScene ().name == "InGameScene") {
+			//Si la colision es con un jugador
+			Jugador j = collision.gameObject.GetComponent<Jugador> ();
+			if (j != null) {
+				if (!GestorMultijugador.singleton.sonMismoEquipo (netId.Value, j.netId.Value)) {
+					if (esTriangulo) {
+						Debug.Log ("He pillado");
+						Cmd_IncrementaPillada (10);
+					}else{
+						Debug.Log("Me han pillado");
+						moverse =  false;
+						gameObject.GetComponent<Renderer>().enabled = false;
+					}
+				}
+
+			}
+		}
+	}
+
 	void OnLevelWasLoaded ( int lvl ){
 		if (lvl == SceneManager.GetSceneByName ("LobbyScene").buildIndex) {
 			GetComponent<JugadorEnSalaDeEspera> ().enabled = true;
 		}
 		if (lvl == SceneManager.GetSceneByName ("InGameScene").buildIndex) {
 			ComienzaAJugar ();
+			moverse = true;
 		}
 	}
 
@@ -115,6 +147,16 @@ public class Jugador : NetworkBehaviour {
 	public void Cmd_RenombrarJugador ( string nombre ){
 		nombreUsuario = nombre;
 		name = nombre;
+	}
+
+	[Command]
+	public void Cmd_IncrementaPillada (int pillada){
+		puntosPillada += pillada;
+	}
+
+	[Command]
+	public void Cmd_IncrementaEscapada (int escapada){
+		puntosEscapada += escapada;
 	}
 
 }

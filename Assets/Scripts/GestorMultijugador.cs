@@ -1,6 +1,8 @@
-﻿using UnityEngine;
+﻿
+using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.SceneManagement;
+using System.Collections.Generic;
 
 public class GestorMultijugador : NetworkBehaviour {
 	//---------------------------------------------------------------------------------------------
@@ -28,6 +30,8 @@ public class GestorMultijugador : NetworkBehaviour {
 	[SyncVar]public float tiempoRondaActual=0;
 	[SyncVar]public float tiempoActual =0;
 	[SyncVar]public float countBackActual = 5;
+
+	[SyncVar]public bool movimientoGeneral = false;
 
 	[SyncVar] bool esEquipo1Triangulos;
 
@@ -75,6 +79,7 @@ public class GestorMultijugador : NetworkBehaviour {
 		if (isServer) {
 			Debug.Log ("Soy el server");
 			Debug.Log ("Jugando: "+jugando);
+			//Gestion de tiempo de ronda/partida
 			if (SceneManager.GetActiveScene ().name == "InGameScene") {
 				Debug.Log ("Estoy en la escena de juego");
 				if (jugando) {
@@ -144,7 +149,7 @@ public class GestorMultijugador : NetworkBehaviour {
 		if (TodosListos ()) {
 			Debug.Log ("Estoy apunto de empezar");
 			//Variables iniciales hardcodeadas
-			numRondas = 4;
+			numRondas = 1;
 			rondaActual = 1;
 			tiempoRonda = 30; // En segundos
 			tiempoRondaActual = tiempoRonda;
@@ -183,11 +188,13 @@ public class GestorMultijugador : NetworkBehaviour {
 		}
 	}*/
 
+	//Función que restaura los valores iniciales de cada ronda.
 	void ContinuarPartida(){
 		if (UltimaRonda()) {
 			//ToDo
 			Debug.Log ("Me tengo que ir a la pantalla de resultados");
-			GestorRed.singleton.ServerChangeScene ("OfflineScene");
+			GestorMultijugador.singleton.movimientoGeneral = false;
+			GestorRed.singleton.ServerChangeScene ("EndScene");
 		} else {
 			GameObject[] jugadores = GameObject.FindGameObjectsWithTag ("Player");
 			Debug.Log ("JUgadores vacio??");
@@ -208,6 +215,7 @@ public class GestorMultijugador : NetworkBehaviour {
 
 	}
 
+	//Retorna si es la ultima ronda
 	public bool UltimaRonda(){
 		return (rondaActual>=numRondas);
 	}
@@ -217,7 +225,10 @@ public class GestorMultijugador : NetworkBehaviour {
 		Debug.Log ("Empiezo a contar");	
 		if (countBackActual <= 0.0) {
 			jugando = true;
-		} else {		
+			movimientoGeneral = true;
+
+		} else {	
+			movimientoGeneral = false;	
 			countBackActual -= Time.deltaTime;
 		}	
 	}
@@ -228,9 +239,19 @@ public class GestorMultijugador : NetworkBehaviour {
 		if (tiempoActual <= 0.0) {
 			jugando = false;
 			rondaFinalizada = true;
+
 		} else {		
 			tiempoActual -= Time.deltaTime;
 		}
 		Debug.Log ("Tiempo ronda: " + tiempoActual);
+	}
+
+	//retorna si los jugadores están en el mismo equipo
+	public bool sonMismoEquipo(uint jugador1, uint jugador2){
+		if (equipo1JugadoresIDs.Contains (jugador1) && equipo1JugadoresIDs.Contains (jugador2))
+			return true;
+		if (equipo2JugadoresIDs.Contains (jugador1) && equipo2JugadoresIDs.Contains (jugador2))
+			return true;
+		return false;
 	}
 }
