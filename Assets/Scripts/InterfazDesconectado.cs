@@ -81,39 +81,49 @@ public class InterfazDesconectado : MonoBehaviour {
 	}
 
 	public void BuscarPartida (){
-		/*
+        /*
 		 * Descomentando este bloqe podemos dejarlo en un solo botón en lugar de dos.
 		 * Ahora hay un botón para modo aleatorio y otro para entrar en una parida en concreto.
 		 * La idea es dejarlo en un solo botón y que el jugador entre en una partida concreta
 		 * al poner el nombre de la sala, y si deja el nombre en blanco entrará aleatoriamente.
 		 */
-		//if (nombreSala.text == "")
-		//	aleatorio = true;
-		//else
-		//	aleatorio = false;
-		if ( aleatorio )
-			gestorRed.matchMaker.ListMatches(0,partidasPorPagina,"",UnirseOCrear);
+        //if (nombreSala.text == "")
+        //	aleatorio = true;
+        //else
+        //	aleatorio = false;
+#if UNITY_5_4 || UNITY_5_5 || UNITY_5_6 || UNITY_5_6_OR_GREATER
+        if ( aleatorio)
+            gestorRed.matchMaker.ListMatches(0,partidasPorPagina,"",true,0,0,UnirseOCrear);
 		else
-			gestorRed.matchMaker.ListMatches(0,partidasPorPagina,nombreSala.text, UnirseOCrear);
-	}
+			gestorRed.matchMaker.ListMatches(0,partidasPorPagina,nombreSala.text,true,0,0, UnirseOCrear);
+#else
+        if (aleatorio)
+            gestorRed.matchMaker.ListMatches(0, partidasPorPagina, "", UnirseOCrear);
+        else
+            gestorRed.matchMaker.ListMatches(0, partidasPorPagina, nombreSala.text, UnirseOCrear);
+#endif
+}
 
-	//ASync
-	//Se ejecutará una vez la función NetworkManager.matchMaker.ListMatches se haya completado
-	void UnirseOCrear (ListMatchResponse matchList){
-		gestorRed.matches = matchList.matches;
+
+#if UNITY_5_4 || UNITY_5_5 || UNITY_5_6 || UNITY_5_6_OR_GREATER
+    //ASync
+    //Se ejecutará una vez la función NetworkManager.matchMaker.ListMatches se haya completado
+    void UnirseOCrear(bool success, string extendedInfo, List<MatchInfoSnapshot> matches)
+    {
+		gestorRed.matches = matches;
 		if (gestorRed.matchInfo == null) {
-			if (matchList.matches == null) {
+			if (matches == null) {
 				Debug.LogError ("ListMatchResponse.matches = null");
 				return;
 			}
-			if (matchList.matches.Count > 0) { //Hay al menos una partida
+			if (matches.Count > 0) { //Hay al menos una partida
 				int idx = 0;
 
 				if (aleatorio) {
 					List<int> publicas = new List<int> ();
 
 					//Busca las partidas publicas
-					foreach (var match in matchList.matches) {
+					foreach (var match in matches) {
 						if (!match.isPrivate)
 							publicas.Add (idx);
 						idx++;
@@ -122,9 +132,9 @@ public class InterfazDesconectado : MonoBehaviour {
 					//Todas las partidas que ha encontrado eran privadas
 					if (publicas.Count == 0) {
 						//¿Habia mas partidas por buscar?
-						if (matchList.matches.Count == partidasPorPagina) {
+						if (matches.Count == partidasPorPagina) {
 							paginaOffset += partidasPorPagina;
-							gestorRed.matchMaker.ListMatches (paginaOffset, partidasPorPagina, "", UnirseOCrear);
+							gestorRed.matchMaker.ListMatches (paginaOffset, partidasPorPagina, "",true,0,0, UnirseOCrear);
 						} else {
 							CrearPartida ();
 						}
@@ -134,15 +144,15 @@ public class InterfazDesconectado : MonoBehaviour {
 					//Elije una partida aleatoria de entre las partidas publicas
 					idx = publicas [Random.Range (0, publicas.Count)];
 				} else {
-					if (matchList.matches.Count > 1)
+					if (matches.Count > 1)
 						Debug.LogError ("Hay más de una partida con el mismo nombre");
 				}
 
 				//Se une a la partida dado el idx
 				//Si la partida no era aleatoria idx será 0
-				gestorRed.matchName = matchList.matches [idx].name;
-				gestorRed.matchSize = (uint)matchList.matches [idx].maxSize;
-				gestorRed.matchMaker.JoinMatch (matchList.matches [idx].networkId, "", gestorRed.TrasUnirseAPartida);
+				gestorRed.matchName = matches [idx].name;
+				gestorRed.matchSize = (uint)matches [idx].maxSize;
+				gestorRed.matchMaker.JoinMatch (matches [idx].networkId, "","","",0,0, gestorRed.TrasUnirseAPartida);
 
 			} else { // No hay partidas, la creo
 				CrearPartida ();
@@ -150,7 +160,94 @@ public class InterfazDesconectado : MonoBehaviour {
 		}
 	}
 
-	void CrearPartida (){
+    void CrearPartida()
+    {
+        //TODO
+        string nombre;
+        if (aleatorio)
+            nombre = "random" + Random.value;
+        else
+        {
+            nombre = nombreSala.text;
+        }
+        gestorRed.matchName = nombre;
+        //gestorRed.matchSize = (uint)0;
+        gestorRed.matchMaker.CreateMatch(nombre, gestorRed.matchSize, true, "", "", "", 0, 0, gestorRed.OnMatchCreate);
+        Debug.Log("Creando partida");
+    }
+
+    void UnirseAPartidaConContraseña()
+    {
+        //TODO
+    }
+#else
+    //ASync
+    //Se ejecutará una vez la función NetworkManager.matchMaker.ListMatches se haya completado
+    void UnirseOCrear(ListMatchResponse matchList)
+    {
+        gestorRed.matches = matchList.matches;
+        if (gestorRed.matchInfo == null)
+        {
+            if (matchList.matches == null)
+            {
+                Debug.LogError("ListMatchResponse.matches = null");
+                return;
+            }
+            if (matchList.matches.Count > 0)
+            { //Hay al menos una partida
+                int idx = 0;
+
+                if (aleatorio)
+                {
+                    List<int> publicas = new List<int>();
+
+                    //Busca las partidas publicas
+                    foreach (var match in matchList.matches)
+                    {
+                        if (!match.isPrivate)
+                            publicas.Add(idx);
+                        idx++;
+                    }
+
+                    //Todas las partidas que ha encontrado eran privadas
+                    if (publicas.Count == 0)
+                    {
+                        //¿Habia mas partidas por buscar?
+                        if (matchList.matches.Count == partidasPorPagina)
+                        {
+                            paginaOffset += partidasPorPagina;
+                            gestorRed.matchMaker.ListMatches(paginaOffset, partidasPorPagina, "", UnirseOCrear);
+                        }
+                        else
+                        {
+                            CrearPartida();
+                        }
+                        return;
+                    }
+
+                    //Elije una partida aleatoria de entre las partidas publicas
+                    idx = publicas[Random.Range(0, publicas.Count)];
+                }
+                else
+                {
+                    if (matchList.matches.Count > 1)
+                        Debug.LogError("Hay más de una partida con el mismo nombre");
+                }
+
+                //Se une a la partida dado el idx
+                //Si la partida no era aleatoria idx será 0
+                gestorRed.matchName = matchList.matches[idx].name;
+                gestorRed.matchSize = (uint)matchList.matches[idx].maxSize;
+                gestorRed.matchMaker.JoinMatch(matchList.matches[idx].networkId, "", gestorRed.TrasUnirseAPartida);
+
+            }
+            else
+            { // No hay partidas, la creo
+                CrearPartida();
+            }
+        }
+    }
+    void CrearPartida (){
 		//TODO
 		string nombre;
 		if (aleatorio)
@@ -167,4 +264,6 @@ public class InterfazDesconectado : MonoBehaviour {
 	void UnirseAPartidaConContraseña(){
 		//TODO
 	}
+#endif
+
 }

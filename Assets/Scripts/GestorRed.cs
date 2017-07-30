@@ -7,34 +7,49 @@ using UnityEngine.SceneManagement;
 public class GestorRed : NetworkManager {
 
 	GameObject gestorMultijugador;
-	//public GameObject GeneradorMapasPref;
-	//static short jugadores = 0;
+    //public GameObject GeneradorMapasPref;
+    //static short jugadores = 0;
 
-	/*public class UserMessage : MessageBase
+    /*public class UserMessage : MessageBase
 	{
 		public string name;
 		//public string team;
 	}*/
-
-	public void TrasUnirseAPartida (JoinMatchResponse matchInfo){
-		if (matchInfo.success){
+#if UNITY_5_4 || UNITY_5_5 || UNITY_5_6 || UNITY_5_6_OR_GREATER
+    public void TrasUnirseAPartida(bool success, string extendedInfo, MatchInfo matchInfo)
+    {
+		if (success){
 			Debug.Log ( "Me estoy uniendo a una partida ya creada" );
 		}
-		base.OnMatchJoined(matchInfo);
+		base.OnMatchJoined( success,  extendedInfo,  matchInfo);
 	}
 
-	public override void OnServerSceneChanged (string sceneName)
-	{
-		if (sceneName == "InGameScene") {
-			//GameObject generadorMapa = GameObject.FindGameObjectWithTag ("GeneradorMapas");
-			//generadorMapa.GetComponent<GeneradorMapas> ().ReiniciarValores ();
-			//generadorMapa.GetComponent<GeneradorMapas> ().CrearMapa ();
+    public override void OnMatchCreate(bool success, string extendedInfo, MatchInfo matchInfo)
+    {
+        if (success)
+        {
+            //GameObject party = (GameObject)Instantiate (spawnPrefabs[0], Vector3.zero, Quaternion.identity);
+            //NetworkServer.Spawn(party);
+            //GameObject generador = Instantiate(GeneradorMapasPref);
+            gestorMultijugador = (GameObject)Instantiate(spawnPrefabs[1], Vector3.zero, Quaternion.identity);
+            DontDestroyOnLoad(gestorMultijugador);
+            StartHost(matchInfo);
+            Debug.LogWarning("Spawneo el gestor");
+            NetworkServer.Spawn(gestorMultijugador);
+            //base.OnMatchCreate(matchInfo);
+        }
+    }
+#else
+    public void TrasUnirseAPartida(JoinMatchResponse matchInfo)
+    {
+        if (matchInfo.success)
+        {
+            Debug.Log("Me estoy uniendo a una partida ya creada");
+        }
+        base.OnMatchJoined(matchInfo);
+    }
 
-		}
-		base.OnServerSceneChanged (sceneName);
-	}
-
-	public override void OnMatchCreate(CreateMatchResponse matchInfo)
+    public override void OnMatchCreate(CreateMatchResponse matchInfo)
 	{
 		if (matchInfo.success) {
 			//GameObject party = (GameObject)Instantiate (spawnPrefabs[0], Vector3.zero, Quaternion.identity);
@@ -48,6 +63,19 @@ public class GestorRed : NetworkManager {
 			//base.OnMatchCreate(matchInfo);
 		}
 	}
+#endif
+    public override void OnServerSceneChanged (string sceneName)
+	{
+		if (sceneName == "InGameScene") {
+			//GameObject generadorMapa = GameObject.FindGameObjectWithTag ("GeneradorMapas");
+			//generadorMapa.GetComponent<GeneradorMapas> ().ReiniciarValores ();
+			//generadorMapa.GetComponent<GeneradorMapas> ().CrearMapa ();
+
+		}
+		base.OnServerSceneChanged (sceneName);
+	}
+
+	
 
 	public override void OnClientSceneChanged(NetworkConnection conn){
 
